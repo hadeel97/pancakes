@@ -11,7 +11,7 @@ app.use(express.json());
 
 
 //ROUTES
-
+//adding a foodComp
 app.post("/foodComp", async(req,res) => {
     try{
         const date = new Date();
@@ -37,10 +37,39 @@ app.post("/foodComp", async(req,res) => {
         console.error(err.message);
     }
 })
-//get foodComp
-//update foodComp
-//get a foodComp
+//get foodComp by meal type & usr email 
+app.get("/foodComp", async(req, res) => {
+    try{
+        const allFoodComps = await pool.query("SELECT * FROM foodComp")
+        res.json(allFoodComps.rows);
+    }
+    catch (err){
+        console.error(err.message);
+    }
+});
+//get breakfast/lunch/dinner 
+app.get("/foodComp/:meal", async(req, res) => {
+    try{
+        const {meal} = req.params;
+        const allFoodComps = await pool.query("SELECT * FROM foodComp WHERE meal =$1 ", [meal] )
+        res.json(allFoodComps.rows);
+    }
+    catch (err){
+        console.error(err.message);
+    }
+});
+
 //delete foodComp
+app.delete("/foodComp/:id", async(req, res) => {
+    try{
+        const {id} = req.params;
+        const deleteFoodComp = await pool.query("DELETE FROM foodComp WHERE fid =$1 ", [id] )
+        res.json("foodComp is deleted");
+    }
+    catch (err){
+        console.error(err.message);
+    }
+});
 
 
 //create User
