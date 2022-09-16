@@ -17,10 +17,11 @@ CREATE TABLE foodComp (
   fID SERIAL PRIMARY KEY,
 	email VARCHAR( 255 ),
 	fname VARCHAR ( 50 ) NOT NULL,
-  cal INTEGER NOT NULL,
-  carb INTEGER NOT NULL,
-  fat INTEGER NOT NULL,
-  protein INTEGER NOT NULL,
+  meal VARCHAR (50) NOT NULL,
+  cal FLOAT NOT NULL,
+  carb FLOAT NOT NULL,
+  fat FLOAT NOT NULL,
+  protein FLOAT NOT NULL,
   day DATE NOT NULL, 
   CONSTRAINT fk FOREIGN KEY (email)
       REFERENCES appUsers(email) 
