@@ -14,8 +14,8 @@ app.use(express.json());
 //adding a foodComp
 app.post("/foodComp", async(req,res) => {
     try{
-        const date = new Date();
-        const {fname, meal} = req.body;
+        
+        const {fname, meal, day} = req.body;
         email = "hadilemah@icloud.com"
        request.get({
             url: 'https://api.calorieninjas.com/v1/nutrition?query='+ fname,
@@ -29,7 +29,7 @@ app.post("/foodComp", async(req,res) => {
         console.log(item)
             var {sugar_g,fiber_g,serving_size_g,sodium_mg,name,potassium_mg,fat_saturated_g,fat_total_g,calories,cholesterol_mg,protein_g,carbohydrates_total_g} = item;
             const newfoodComp = await pool.query(
-                "INSERT INTO foodComp (email, fname, meal, cal, carb, fat, protein, day) VALUES($1,$2,$3,$4,$5,$6, $7, $8)", [email, fname, meal, calories, carbohydrates_total_g,fat_total_g,protein_g,date]);
+                "INSERT INTO foodComp (email, fname, meal, cal, carb, fat, protein, day) VALUES($1,$2,$3,$4,$5,$6, $7, $8) RETURNING *", [email, fname, meal, calories, carbohydrates_total_g,fat_total_g,protein_g,day]);
             res.json(newfoodComp);
           });
 
@@ -37,21 +37,35 @@ app.post("/foodComp", async(req,res) => {
         console.error(err.message);
     }
 })
-//get foodComp by meal type & usr email 
-app.get("/foodComp", async(req, res) => {
+//get foodComp
+app.get("/foodComp/getByUser", async(req, res) => {
     try{
-        const allFoodComps = await pool.query("SELECT * FROM foodComp")
+        const {email}= req.query;
+        const allFoodComps = await pool.query("SELECT * FROM foodComp WHERE email = $1", [email])
         res.json(allFoodComps.rows);
     }
     catch (err){
         console.error(err.message);
     }
 });
+
 //get breakfast/lunch/dinner 
-app.get("/foodComp/:meal", async(req, res) => {
+app.get("/foodComp/getByMeal", async(req, res) => {
     try{
-        const {meal} = req.params;
-        const allFoodComps = await pool.query("SELECT * FROM foodComp WHERE meal =$1 ", [meal] )
+        const {meal} = req.query;
+        const allFoodComps = await pool.query("SELECT * FROM foodComp WHERE meal =$1", [meal] )
+        res.json(allFoodComps.rows);
+    }
+    catch (err){
+        console.error(err.message);
+    }
+});
+
+//get breakfast/lunch/dinner using date
+app.get("/foodComp", async(req, res) => {
+    try{
+        const {day} = req.query;
+        const allFoodComps = await pool.query("SELECT * FROM foodComp WHERE day =$1", [day] )
         res.json(allFoodComps.rows);
     }
     catch (err){
@@ -63,7 +77,7 @@ app.get("/foodComp/:meal", async(req, res) => {
 app.delete("/foodComp/:id", async(req, res) => {
     try{
         const {id} = req.params;
-        const deleteFoodComp = await pool.query("DELETE FROM foodComp WHERE fid =$1 ", [id] )
+        const deleteFoodComp = await pool.query("DELETE FROM foodComp WHERE fid =$1 RETURNING *", [id] )
         res.json("foodComp is deleted");
     }
     catch (err){
@@ -88,7 +102,9 @@ app.post("/appUsers", async(req,res) => {
 
 })
 //get User with email & pw
+
 //delete User
+
 //update User
 
 
