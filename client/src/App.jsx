@@ -1,58 +1,69 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment} from 'react';
 import './App.css';
-import Breakfast from './components/Breakfast';
-import Lunch from './components/Lunch';
-import Dinner from './components/Dinner';
-import Title from './Title';
-import './Title.css';
-import {DatePicker} from 'antd'
-
-
+import { useEffect, useState } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect
+} from "react-router-dom";
+import Login from './components/auth/Login';
+import Dashboard from "./components/dashboard/Dashboard";
+import Register from "./components/auth/Registration";
+import Landing from "./components/landingpage";
 
 function App() {
 
-  const [mealsFood,setMealsFood] = useState({breakfast:[],lunch:[],dinner:[]})
-  const [day, setDay] = useState("")
+  useEffect(() => {
+    localStorage.getItem("token")? setIsAuthenticated(true): setIsAuthenticated(false);
+  }, [localStorage.getItem("token")]);
 
 
-const getFoodData = async(day) =>{
-  try{
-    console.log(day)
-    fetch(`http://localhost:8000/foodComp?day=${day}`,
-    {
-        method: "GET",
-        headers: {"Content-Type":"application/json"}
-    }
-    ).then((res)=> res.json()).then(data=>{
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-
-      console.log(data)
-      const breakfast = data.filter(m => m.meal === "breakfast")
-      const lunch = data.filter(m => m.meal === "lunch")
-      const dinner = data.filter(m => m.meal === "dinner")
-      setMealsFood({breakfast:breakfast,lunch:lunch,dinner:dinner})
-    }
-      )
-   
-}catch(err){
-    console.error(err.message)
-}
-}
+  const setAuth = boolean => {
+    setIsAuthenticated(boolean);
+  };
 
   return (
     <Fragment>
-      <Title/>
-      <div className="container">
-         <DatePicker style={{float: "right"}} onChange = { (day) => {getFoodData(day.format("L")) ; setDay(day.format("L"))}}></DatePicker>
-         <Breakfast meals = {mealsFood.breakfast} day = {day}/>
-         <Lunch meals = {mealsFood.lunch} day = {day}/>
-         <Dinner meals = {mealsFood.dinner} day = {day}/>
-      </div>
+      <Router>
+        <div className='container'>
+          <Switch>
+            <Route exact path="/" 
+            render={props =>
+            !isAuthenticated ? (
+              <Landing {...props}/>
+            ):(
+              <Redirect to="/dashboard"/>
+            )}/>
+            <Route exact path="/login" 
+            render={props =>
+            !isAuthenticated ? (
+              <Login {...props} setAuth={setAuth}/>
+            ):(
+              <Redirect to="/dashboard"/>
+            )}/>
+            <Route exact path="/register" 
+            render={props =>
+            !isAuthenticated ? (
+              <Register {...props} setAuth={setAuth}/>
+            ):(
+              <Redirect to="/login"/>
+            )}/>
+            <Route exact path="/dashboard" 
+            render={props =>
+            isAuthenticated ? (
+              <Dashboard {...props} setAuth={setAuth}/>
+            ):(
+              <Redirect to="/login"/>
+            )}/>
+          </Switch>
+        </div>
+       </Router>
     </Fragment>
   );
   
 }
-
-
 
 export default App;
